@@ -11,27 +11,23 @@ mydb = mysql.connector.connect(
 )
 
 mycursor = mydb.cursor()
+mycursor.execute("CREATE TABLE expenditures (id INT AUTO_INCREMENT PRIMARY KEY, date_purchased DATE, item_name VARCHAR(255), description VARCHAR(255), cost FLOAT)")
 
-#expenditures (datePurchased DATE, itemName VARCHAR(255), cost FLOAT)
+while True:
+  print("\n=== Expense Tracker ===")
+  print("1. Add expense")
+  print("2. Remove expense")
+  print("3. View total")
+  print("4. Add/replace description")
+  print("5. Print table")
 
-sql = "UPDATE expenditures SET item_name = 'Mercedes 300E' WHERE item_name = 'Car'" #"SELECT item_name  FROM expenditures WHERE YEAR(date_purchased) >= 2024 ORDER BY item_name DESC"
-"""val = [
-  ('2025-01-27', "Car", 44000),
-  ('2025-08-21', "Tax return", -400),
-  ('2026-01-02', "Wage", -4000),
-  ('2025-11-07', "TV", 2000),
-  ('2024-09-27', "Al-Baik", 70.65),
-  ('2023-01-27', "Washing machine", 4030.23),
-  ('2018-04-19', "Rent", 1500),
-  ('2026-04-02', "Bike", 200.54),
-  ('2025-10-03', "Chair", 141.34),
-  ('2024-11-07', "Bills", 700.98),
-]"""
+  choice = input("What do you want to do? ")
 
-#mycursor.executemany(sql, val)
-mycursor.execute(sql)
-mydb.commit()
-print(mycursor.rowcount, "record(s) affected")
+def add_expense(date, name, desc, amount):
+  sql = "INSERT INTO expenditures (date_purchased, item_name, description, cost) VALUES (%s, %s, %s, %s)"
+  mycursor.execute(sql, (date, name, desc, amount))
+  mydb.commit()
+
 
 
 
