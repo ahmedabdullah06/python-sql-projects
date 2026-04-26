@@ -23,7 +23,7 @@ def add_expense(date, name, desc, amount):
 def total_expenses():
   mycursor.execute("SELECT SUM(cost) FROM expenditures;")
   result = mycursor.fetchone()
-  print("Total:", result[0])
+  print("\nTotal: %.2f", result[0])
 
 def remove_expense_id(id):
   check_sql = "SELECT * FROM expenditures WHERE id=%s;"
@@ -31,14 +31,14 @@ def remove_expense_id(id):
   result = mycursor.fetchone()
 
   if result is None:
-      print("Item with id %s not found.", id)
+      print("\nItem with id %s not found.", id)
       return
 
   delete_sql = "DELETE FROM expenditures WHERE id = %s;"
   mycursor.execute(delete_sql, (id,))
   mydb.commit()
 
-  print("Expense deleted.")
+  print("\nExpense deleted.")
 
 def remove_expense_name(item_name):
   check_sql = "SELECT * FROM expenditures WHERE item_name = %s;"
@@ -46,14 +46,14 @@ def remove_expense_name(item_name):
   result = mycursor.fetchone()
 
   if result is None:
-      print("Item with item name \"%s\" not found.", item_name)
+      print("\nItem with item name \"%s\" not found.", item_name)
       return
 
   delete_sql = "DELETE FROM expenditures WHERE item_name = %s;"
   mycursor.execute(delete_sql, (item_name,))
   mydb.commit()
 
-  print("Expense deleted.")
+  print("\nExpense deleted.")
 
 def expenses_month():
   sql = """
@@ -115,6 +115,11 @@ while True:
       total_expenses()
     
     case "4":
+      expenses_month()
+
+    case _:
+      print("Invalid input, please try again.")
+  print("\n=============================\n")
 
 
 
