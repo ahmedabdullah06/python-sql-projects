@@ -11,7 +11,7 @@ mydb = mysql.connector.connect(
 )
 
 mycursor = mydb.cursor()
-mycursor.execute("CREATE TABLE IF NOT EXISTS expenditures (id INT AUTO_INCREMENT PRIMARY KEY, date_purchased DATE, item_name VARCHAR(255), description VARCHAR(255), cost DECIMAL(10, 2));")
+mycursor.execute("CREATE TABLE IF NOT EXISTS expenditures (id INT AUTO_INCREMENT PRIMARY KEY, date_purchased DATE, item_name VARCHAR(255), description VARCHAR(255), cost DECIMAL(10,2));")
 
 
 #Functions
@@ -23,7 +23,7 @@ def add_expense(date, name, desc, amount):
 def total_expenses():
   mycursor.execute("SELECT SUM(cost) FROM expenditures;")
   result = mycursor.fetchone()
-  print("\nTotal: %.2f", result[0])
+  print("Total: " + f"{result[0]:.2f}")
 
 def remove_expense_id(id):
   check_sql = "SELECT * FROM expenditures WHERE id=%s;"
@@ -75,7 +75,6 @@ def print_table():
   mycursor.execute(sql)
   results = mycursor.fetchall()
 
-  print("\n")
   for i in results:
     print(i)
 
@@ -91,7 +90,8 @@ while True:
   print("6. Print table")
 
   choice = input("What would you like to do? ")
-
+  print("\n")
+  
   match choice:
     case "1":
       item = input("Enter item name: ")
