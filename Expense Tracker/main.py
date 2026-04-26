@@ -11,7 +11,7 @@ mydb = mysql.connector.connect(
 )
 
 mycursor = mydb.cursor()
-mycursor.execute("CREATE TABLE IF NOT EXISTS expenditures (id INT AUTO_INCREMENT PRIMARY KEY, date_purchased DATE, item_name VARCHAR(255), description VARCHAR(255), cost DECIMAL);")
+mycursor.execute("CREATE TABLE IF NOT EXISTS expenditures (id INT AUTO_INCREMENT PRIMARY KEY, date_purchased DATE, item_name VARCHAR(255), description VARCHAR(255), cost DECIMAL(10, 2));")
 
 
 #Functions
@@ -70,6 +70,14 @@ def expenses_month():
   for i in result:
     print(i)
 
+def print_table():
+  sql = "SELECT * FROM expenditures"
+  mycursor.execute(sql)
+  results = mycursor.fetchall()
+
+  print("\n")
+  for i in results:
+    print(i)
 
 while True:
   choice = ""
@@ -90,7 +98,7 @@ while True:
       date = input("Enter date of purchase in the format 'yyyy-mm-dd': ")
       cost = float(input("Enter item cost: "))
       choice2 = input("Would you like to add an item description? y/n: ")
-      description = "None"
+      description = "No description"
 
       if choice2.lower() in ('y', 'yes'):
         description = input("Enter a short description: ")
@@ -116,6 +124,9 @@ while True:
     
     case "4":
       expenses_month()
+    
+    case "6":
+      print_table()
 
     case _:
       print("Invalid input, please try again.")
