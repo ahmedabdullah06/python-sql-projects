@@ -78,6 +78,16 @@ def print_table():
   for i in results:
     print(i)
 
+def alter_description(id, desc):
+  sql = "UPDATE expenditures SET description = %s WHERE id = %s;"
+  mycursor.execute(sql, (desc, id))
+
+  if mycursor.rowcount == 0:
+        print("No expense with that ID.")
+  else:
+      mydb.commit()
+      print("Description updated.")
+
 while True:
   choice = ""
   choice2 = ""
@@ -124,6 +134,11 @@ while True:
     
     case "4":
       expenses_month()
+
+    case "5":
+      id = input("Enter the ID for the item you would like to alter the description for: ")
+      description = input("Enter the description for this item: ")
+      alter_description(id, description)
     
     case "6":
       print_table()
