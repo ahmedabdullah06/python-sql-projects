@@ -23,10 +23,11 @@ def add_expense(date, name, desc, amount):
 def total_expenses():
   mycursor.execute("SELECT SUM(cost) FROM expenditures;")
   result = mycursor.fetchone()
-  print("Total: " + f"{result[0]:.2f}")
+  total = result[0] or 0
+  print("Total: " + f"{total:.2f}")
 
 def remove_expense_id(id):
-  check_sql = "SELECT * FROM expenditures WHERE id=%s;"
+  check_sql = "SELECT * FROM expenditures WHERE id = %s;"
   mycursor.execute(check_sql, (id,))
   result = mycursor.fetchone()
 
@@ -117,17 +118,18 @@ while True:
 
     case "2":
       print("1. Remove by ID")
-      print("2. Remove by item name")
+      print("2. Remove by item name (all instances of the item will be deleted)")
 
       choice2 = input("Choose your method of deletion: ")
       
       if(choice2 == "1"):
-        id = input("Enter the ID for the item you would like to delete: ")
+        id = int(input("Enter the ID for the item you would like to delete: "))
         remove_expense_id(id)
-
-      if(choice2 == "2"):
+      elif(choice2 == "2"):
         item_name = input("Enter the name for the item you would like to delete: ")
         remove_expense_name(item_name)
+      else:
+        print("Invalid choice")
 
     case "3":
       total_expenses()
