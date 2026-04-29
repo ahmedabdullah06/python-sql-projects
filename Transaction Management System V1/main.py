@@ -40,6 +40,63 @@ def create_account():
     except mysql.connector.Error as err:
         print("Account already exists. Please sign in with an existing account or sign up with an unused email.")
 
+def add_item(cart):
+    cursor.execute("SELECT * FROM products;")
+    results = cursor.fetchall()
+
+    for x in results:
+        print(x)
+    print("")
+
+    item_id = int(input("Enter the product id for the item you would like to add to your cart: "))
+    quant = int(input("Enter the quantity of the item you selected: "))
+
+    cursor.execute("SELECT * FROM products WHERE product_id = %s", (item_id,))
+    results = cursor.fetchone()
+
+    if (results):
+        found = False
+        for item in cart:
+            if item["ID"] == item_id:
+                item["Quantity"] += quant
+                found = True
+                break
+
+        if not found:
+            cart.append({
+                "ID": results[0],
+                "Name": results[1],
+                "Cost": results[3],
+                "Quantity": quant
+            })
+        print("Item added to cart!")
+        input()
+    
+    else:
+        print("Item does not exist, please enter a valid item id.")
+
+def remove_item(cart):
+    found = False
+    if not cart:
+        print("Cart is empty.")
+        return
+    for item in cart:
+        print(f"ID: {item['ID']}, {item['Name']} x{item['Quantity']} for ${item['Cost']} each")
+    print("")
+
+    item_id = int(input("Enter the product id for the item you would like to remove from your cart: "))
+    for item in cart:
+        if item["ID"] == item_id:
+            cart.remove(item)
+            found = True
+            print("Item removed from cart!")
+            input()
+            break
+
+    if not found:
+        print("Item not found in cart.")
+
+
 def sign_in():
     email = input("Enter your email to sign in: ")
 
@@ -47,29 +104,37 @@ def sign_in():
     result = cursor.fetchone()
 
     if (result):
+        cart = []
         while True:
             clear()
             print(f"\Welcome back, {result[1]}!")
             print("\nWhat action would you like to do?")
             print("1: Add item to cart.")
             print("2: Remove item from cart.")
-            print("3: Checkout.")
-            print("4: Log out.\n")
+            print("3: Display cart.")
+            print("4: Checkout.")
+            print("5: Log out.\n")
 
             choice = input("Please enter your choice: ")
 
             if(choice == "1"):
-                add_item()
+                add_item(cart)
             elif(choice == "2"):
-                remove_item()
+                remove_item(cart)
             elif(choice == "3"):
-                checkout()
+                checkout(cart)
             elif(choice == "4"):
+                checkout(cart)
+            elif(choice == "5"):
                 print(f"\nGoodbye {result[1]}!")
                 input()
                 break
+            else:
+                print("Please enter a valid option.")
     else:
         print("No account found. Please sign in using an existing registered email or sign up.")
+
+
 while True:
     clear()
     print("\n==================== The Transaction Management System Version 1 ====================\n")
