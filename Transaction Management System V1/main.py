@@ -13,8 +13,8 @@ mydb = mysql.connector.connect(
 cursor = mydb.cursor()
 
 cursor.execute("CREATE TABLE IF NOT EXISTS products (product_id INT AUTO_INCREMENT PRIMARY KEY, item_name VARCHAR(255), rating INT, cost DECIMAL(10,2));")
-cursor.execute("CREATE TABLE IF NOT EXISTS customer (user_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), email VARCHAR(255) UNIQUE;")
-cursor.execute("CREATE TABLE IF NOT EXISTS orders (order_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, order_date DATE, FOREIGN KEY (user_id) REFERENCES users(user_id));")
+cursor.execute("CREATE TABLE IF NOT EXISTS customer (user_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), email VARCHAR(255) UNIQUE);")
+cursor.execute("CREATE TABLE IF NOT EXISTS orders (order_id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, order_date DATE, FOREIGN KEY (user_id) REFERENCES customer(user_id));")
 cursor.execute("""CREATE TABLE IF NOT EXISTS order_items (
                order_item_id INT AUTO_INCREMENT PRIMARY KEY, 
                order_id INT, 
@@ -96,6 +96,34 @@ def remove_item(cart):
     if not found:
         print("Item not found in cart.")
 
+def display(cart):
+    if not cart:
+        print("Cart is empty.")
+        return
+    
+    for item in cart:
+        print(f"ID: {item['ID']}, {item['Name']} x{item['Quantity']} for ${item['Cost']} each")
+        input()
+
+def checkout(cart, email):
+    if not cart:
+        print("Cart is empty.")
+        return
+    
+    cursor.execute("SELECT user_id FROM customer WHERE email = %s", (email,))
+    user = cursor.fetchone()
+    user_id = user[0]
+
+    cursor.execute("INSERT INTO orders (user_id, order_date) VALUES (%s, NOW())", (user_id,))
+    order_id = cursor.lastrowid
+
+    for item in cart:
+        cursor.execute("INSERT INTO order_items (order_id, product_id, quantity) VALUES (%s, %s, %s)", (order_id, item["ID"], item["Quantity"]))
+    mydb.commit()
+    cart.clear()
+    print("Order placed successfully!")
+    input()
+    return
 
 def sign_in():
     email = input("Enter your email to sign in: ")
@@ -122,9 +150,9 @@ def sign_in():
             elif(choice == "2"):
                 remove_item(cart)
             elif(choice == "3"):
-                checkout(cart)
+                display(cart)
             elif(choice == "4"):
-                checkout(cart)
+                checkout(cart, email)
             elif(choice == "5"):
                 print(f"\nGoodbye {result[1]}!")
                 input()
@@ -133,7 +161,6 @@ def sign_in():
                 print("Please enter a valid option.")
     else:
         print("No account found. Please sign in using an existing registered email or sign up.")
-
 
 while True:
     clear()
@@ -149,4 +176,6 @@ while True:
         sign_in()
     else:
         print("Please enter a valid choice.")
+
+    print("\n======================================================================================\n")
     
