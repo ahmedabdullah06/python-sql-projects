@@ -1,5 +1,6 @@
 import os
 import mysql.connector
+from decimal import Decimal
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -35,10 +36,13 @@ def create_account():
     try:
         cursor.execute("INSERT INTO customer (name, email) VALUES (%s, %s)", (name, email))
         mydb.commit()
-        print("Account created!\n")
+        print("Account created!\n\n")
+        input()
+        sign_in()
 
     except mysql.connector.Error as err:
         print("Account already exists. Please sign in with an existing account or sign up with an unused email.")
+        input()
 
 def add_item(cart):
     cursor.execute("SELECT * FROM products;")
@@ -48,8 +52,12 @@ def add_item(cart):
         print(x)
     print("")
 
-    item_id = int(input("Enter the product id for the item you would like to add to your cart: "))
-    quant = int(input("Enter the quantity of the item you selected: "))
+    try:
+        item_id = int(input("Enter the product id for the item you would like to add to your cart: "))
+        quant = int(input("Enter the quantity of the item you selected: "))
+    except ValueError:
+        print("Please enter a valid numerical value.")
+        return
 
     cursor.execute("SELECT * FROM products WHERE product_id = %s", (item_id,))
     results = cursor.fetchone()
@@ -74,11 +82,13 @@ def add_item(cart):
     
     else:
         print("Item does not exist, please enter a valid item id.")
+        input()
 
 def remove_item(cart):
     found = False
     if not cart:
         print("Cart is empty.")
+        input()
         return
     for item in cart:
         print(f"ID: {item['ID']}, {item['Name']} x{item['Quantity']} for ${item['Cost']} each")
@@ -95,10 +105,12 @@ def remove_item(cart):
 
     if not found:
         print("Item not found in cart.")
+        input()
 
 def display(cart):
     if not cart:
         print("Cart is empty.")
+        input()
         return
     
     for item in cart:
@@ -108,6 +120,7 @@ def display(cart):
 def checkout(cart, email):
     if not cart:
         print("Cart is empty.")
+        input()
         return
     
     cursor.execute("SELECT user_id FROM customer WHERE email = %s", (email,))
@@ -117,7 +130,7 @@ def checkout(cart, email):
     cursor.execute("INSERT INTO orders (user_id, order_date) VALUES (%s, NOW())", (user_id,))
     order_id = cursor.lastrowid
 
-    cost = 0
+    cost = Decimal('0.0')
     for item in cart:
         cursor.execute("INSERT INTO order_items (order_id, product_id, quantity) VALUES (%s, %s, %s)", (order_id, item['ID'], item['Quantity']))
         cost += item['Cost']*item['Quantity']
@@ -125,7 +138,7 @@ def checkout(cart, email):
     cart.clear()
     print(f"Order placed successfully!")
     print(f"Subtotal: ${cost:.2f}")
-    print(f"Total with tax: ${cost*1.13:.2f}")
+    print(f"Total with tax: ${cost*Decimal("1.13"):.2f}")
     input()
     return
 
@@ -137,9 +150,10 @@ def sign_in():
 
     if (result):
         cart = []
+        print(f"\nWelcome back, {result[1]}!")
+        input()
         while True:
             clear()
-            print(f"\nWelcome back, {result[1]}!")
             print("\nWhat action would you like to do?")
             print("1: Add item to cart.")
             print("2: Remove item from cart.")
@@ -163,8 +177,10 @@ def sign_in():
                 break
             else:
                 print("Please enter a valid option.")
+                input()
     else:
         print("No account found. Please sign in using an existing registered email or sign up.")
+        input()
 
 def order_history():
     sql = """SELECT 
@@ -182,17 +198,21 @@ def order_history():
     GROUP BY 
         orders.order_id,
         customer.name,
-        orders.order_date;
+        orders.order_date
+    ORDER BY orders.order_id;
     """
 
     cursor.execute(sql)
     results = cursor.fetchall()
 
-    print("Please note, the dollar amounts shown include tax.\n")
+    print("\nPlease note, the dollar amounts shown include tax.\n")
 
-    for row in results:
-        print(row)
+    for order_id, name, total, order_date in results:
+        print("-------------------------------------------------------------------------------------------------------------------------------------")
+        print(f"Order ID: {order_id:<3} | Customer: {name:<15} | Total: ${total:<3.2f} | Order date: {str(order_date):>6}")
+    print("-------------------------------------------------------------------------------------------------------------------------------------")
     input()
+    return
 
 def detailed_history():
     sql = """SELECT
@@ -201,7 +221,6 @@ def detailed_history():
     customer.name,
     products.item_name,
     order_items.quantity,
-    products.cost,
     products.cost * order_items.quantity AS subtotal,
     orders.order_date
     FROM order_items
@@ -210,16 +229,20 @@ def detailed_history():
     JOIN customer
         ON orders.user_id = customer.user_id
     JOIN products
-        ON order_items.product_id = products.product_id;
+        ON order_items.product_id = products.product_id
+    ORDER BY order_items.order_item_id;
     """
     cursor.execute(sql)
     results = cursor.fetchall()
 
-    print("Please note, the dollar amounts shown do not include tax.\n")
+    print("\nPlease note, the dollar amounts shown do not include tax.\n")
 
-    for row in results:
-        print(row)
+    for id, order_id, name, item, quantity, subtotal, order_date in results:
+        print("------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        print(f"#{id}: Order ID: {order_id:<4} | Customer: {name:<25} | Product: {item:<25} | Quantity: {quantity:<4} | Cost: {subtotal:<10.2f} | Purchase date: {str(order_date):>10}")
+    print("------------------------------------------------------------------------------------------------------------------------------------------------------------------")
     input()
+    return
 
 while True:
     clear()
@@ -227,7 +250,7 @@ while True:
     print("Hello! Welcome to the TMS V1. What action would you like to take?\n")
     print("1: Sign up.")
     print("2: Sign in.")
-    print("3. View all orders.\n")
+    print("3. View all orders.")
     print("4. View all orders in detail.\n")
     choice = input("Please enter your choice: ")
 
@@ -241,6 +264,7 @@ while True:
         detailed_history()
     else:
         print("Please enter a valid choice.")
+        input()
 
     print("\n======================================================================================\n")
     
