@@ -48,8 +48,8 @@ def add_item(cart):
     cursor.execute("SELECT * FROM products;")
     results = cursor.fetchall()
 
-    for x in results:
-        print(x)
+    for product_id, item_name, rating, cost in results:
+        print(f"ID: {product_id:<4} | Item: {item_name:<20} | Rating: {rating}/5 | Price: ${cost:>8}")
     print("")
 
     try:
